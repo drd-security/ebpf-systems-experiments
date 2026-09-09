@@ -1,0 +1,12 @@
+*.o
+*.out
+*.exe
+build/
+main
+test_filededup
+.idea/
+.vscode/
+.DS_Store
+
+vmlinux.h
+*.bpf.o
