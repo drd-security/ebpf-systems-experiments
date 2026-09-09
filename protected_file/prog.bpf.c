@@ -28,15 +28,15 @@ int BPF_PROG(handle_hook, struct file *file, int ret)
     if (__builtin_memcmp(comm, "scanner", 8) != 0)
         return 0;
 
-    i_mode = BPF_CORE_READ(file, f_inode, i_mode);  // Read i_mode to check the file type.
+    i_mode = BPF_CORE_READ(file, f_inode, i_mode);  // lecture de i_mode pour vérifier le type de fichier
 
-    // Only block regular files.
+    // Ne bloquer que les fichiers réguliers
     if ((i_mode & S_IFMT) != S_IFREG) 
         return 0;
 
-    f_mode = BPF_CORE_READ(file, f_mode); // Read f_mode to check whether the file is opened for writing.
+    f_mode = BPF_CORE_READ(file, f_mode); // lecture de f_mode pour vérifier les permissions d'ouverture
 
-    // Reject write access when scanner opens a regular file.
+    // Si scanner ouvre un fichier régulier en écriture => refus
     if (f_mode & FMODE_WRITE)
     {
         bpf_printk("blocking scanner open-for-write\n");

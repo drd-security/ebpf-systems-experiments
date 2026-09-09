@@ -1,12 +1,34 @@
-*.o
-*.out
-*.exe
+# Build artifacts
 build/
-main
-test_filededup
+bin/
+target/
+*.o
+*.a
+*.so
+*.class
+*.jar
+*.elf
+*.hex
+*.hxl
+*.cmf
+*.sym
+*.lst
+*.rlf
+*.d
+*.i
+*.out
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local configuration / secrets
+.env
+*.local
+
+# IDE / OS
 .idea/
 .vscode/
 .DS_Store
-
-vmlinux.h
-*.bpf.o

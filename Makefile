@@ -1,25 +1,29 @@
+CHALLENGE ?= antidebug
 CLANG ?= clang
 CC ?= gcc
 BPFTOOL ?= bpftool
-ARCH ?= x86
-CFLAGS ?= -O2 -g -Wall -Wextra
-BPF_CFLAGS ?= -O2 -g -target bpf -D__TARGET_ARCH_$(ARCH)
-CHALLENGE ?= antidebug
-DIR := challenges/$(CHALLENGE)
 
-.PHONY: all clean vmlinux
-all: $(DIR)/prog.bpf.o $(DIR)/prog
+DIR := $(CHALLENGE)
+VMLINUX := $(DIR)/vmlinux.h
+BPF_OBJ := $(DIR)/prog.bpf.o
+USER_BIN := $(DIR)/prog
+ARCH_INC ?= /usr/include/$(shell uname -m)-linux-gnu
 
-$(DIR)/vmlinux.h:
+BPF_CFLAGS ?= -O2 -g -target bpf -D__TARGET_ARCH_x86 -I$(DIR) -I$(ARCH_INC)
+USER_CFLAGS ?= -O2 -g -Wall -Wextra
+USER_LIBS ?= -lbpf -lelf -lz
+
+.PHONY: all clean
+all: $(USER_BIN)
+
+$(VMLINUX):
 	$(BPFTOOL) btf dump file /sys/kernel/btf/vmlinux format c > $@
 
-$(DIR)/prog.bpf.o: $(DIR)/prog.bpf.c $(DIR)/vmlinux.h
-	$(CLANG) $(BPF_CFLAGS) -I$(DIR) -c $< -o $@
+$(BPF_OBJ): $(DIR)/prog.bpf.c $(VMLINUX)
+	$(CLANG) $(BPF_CFLAGS) -c $< -o $@
 
-$(DIR)/prog: $(DIR)/prog.c
-	$(CC) $(CFLAGS) $< -o $@ -lbpf -lelf -lz
+$(USER_BIN): $(DIR)/prog.c $(BPF_OBJ)
+	$(CC) $(USER_CFLAGS) $< -o $@ $(USER_LIBS)
 
 clean:
-	find challenges -name 'prog.bpf.o' -delete
-	find challenges -name 'prog' -type f -delete
-	find challenges -name 'vmlinux.h' -delete
+	rm -f */vmlinux.h */prog.bpf.o */prog
